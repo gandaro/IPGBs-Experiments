@@ -44,7 +44,7 @@ const INCLUDE_PATTERNS = [
     "knapsack_binary_10_",
     "knapsack_binary_20_",
     "knapsack_binary_30_",
-    "knapsack_binary_40_",
+    # "knapsack_binary_40_",
 
     # Unbounded Knapsack (UKP): n = 10, 20, 30
     "knapsack_unbounded_10_",
