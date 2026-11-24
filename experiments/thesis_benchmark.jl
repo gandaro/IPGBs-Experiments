@@ -30,7 +30,10 @@ end
             try
                 println("IPGBs, ", label)
                 GC.gc() # Prevent GC spillover from the previous variant
+                cpu_t0 = Base.CPU_time_ns()
                 stats = @timed solve_fn(path)
+                cpu_time = (Base.CPU_time_ns() - cpu_t0) / 1e9
+                println("cpu_time => ", cpu_time)
                 println("time => ", stats.time)
                 println("memory => ", stats.bytes / 1024^3)
 
