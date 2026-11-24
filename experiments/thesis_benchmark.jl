@@ -38,19 +38,43 @@ end
     end
 end
 
-const EXCLUDE_PATTERNS = [
-    "knapsack_binary_50_",
-    "knapsack_binary_multidimensional_20_5_",
-    "knapsack_binary_multidimensional_25_3_",
-    "set_packing_100_35_",
-    "set_cover_30_17_",
-    "set_cover_30_18_",
-    "set_cover_30_19_",
-    "knapsack_multidimensional_90_",
-    "knapsack_multidimensional_100_"
+# Exact whitelist of fast-to-medium scaling steps (~0.1s to ~15s each -> < 45s total on 2 workers)
+const INCLUDE_PATTERNS = [
+    # Binary Knapsack (0-1KP): n = 10, 20, 30, 40
+    "knapsack_binary_10_",
+    "knapsack_binary_20_",
+    "knapsack_binary_30_",
+    "knapsack_binary_40_",
+
+    # Unbounded Knapsack (UKP): n = 10, 20, 30
+    "knapsack_unbounded_10_",
+    "knapsack_unbounded_20_",
+    "knapsack_unbounded_30_",
+
+    # Multidimensional Knapsack (MDKP): n = 40, 50, 60, 70
+    "knapsack_multidimensional_40_",
+    "knapsack_multidimensional_50_",
+    "knapsack_multidimensional_60_",
+    "knapsack_multidimensional_70_",
+
+    # 0-1 Multidimensional Knapsack (0-1MDKP): (10,5), (15,5), (20,2), (20,3)
+    "knapsack_binary_multidimensional_10_5_",
+    "knapsack_binary_multidimensional_15_5_",
+    "knapsack_binary_multidimensional_20_2_",
+    "knapsack_binary_multidimensional_20_3_",
+
+    # Set Packing (SPP): (100,20), (100,25), (100,30)
+    "set_packing_100_20_",
+    "set_packing_100_25_",
+    "set_packing_100_30_",
+
+    # Set Cover (SCP): (30,10), (30,12), (30,15)
+    "set_cover_30_10_",
+    "set_cover_30_12_",
+    "set_cover_30_15_"
 ]
 
-is_excluded(filename::String) = any(p -> occursin(p, basename(filename)), EXCLUDE_PATTERNS)
+is_included(filename::String) = any(p -> occursin(p, basename(filename)), INCLUDE_PATTERNS)
 
 const INSTANCE_DIRS = [
     "knapsack_binary",
@@ -86,9 +110,9 @@ function run_scaling_suite()
     for dirname in INSTANCE_DIRS
         if isdir(dirname)
             for filename in sort(readdir(dirname, join=true))
-                if endswith(filename, "_1.mps") && !is_excluded(filename)
-                    push!(selected_files, filename)
-                end
+				if endswith(filename, "_1.mps") && is_included(filename)
+					push!(selected_files, filename)
+				end
             end
         end
     end
