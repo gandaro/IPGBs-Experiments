@@ -3,7 +3,7 @@
 #Variations of the algorithm: with and without binary truncation
 
 using IPGBs
-using IPGBs.FourTi2
+#using IPGBs.FourTi2
 
 function run_instance(path)
     try
@@ -15,9 +15,9 @@ function run_instance(path)
         ipgbs_stats = @timed groebner_basis(path, quiet=false, use_binary_truncation=true)
         println("time => ", ipgbs_stats.time)
         println("memory => ", ipgbs_stats.bytes / 1024^3) # in GB
-        fti2_stats = @timed groebner(path)
-        println("4ti2 results")
-        println("4ti2 time => ", fti2_stats.time) #memory isn't easily available
+        # fti2_stats = @timed groebner(path)
+        # println("4ti2 results")
+        # println("4ti2 time => ", fti2_stats.time) #memory isn't easily available
     catch e
         println("Error: ", e)
     end
