@@ -14,27 +14,48 @@ end
         #("Opt_V1 (My Custom Opt)",   path -> groebner_basis(path, quiet=false, use_binary_truncation=true)) # <-- adjust kwargs/function here
     ]
 
-    function run_instance(path::String)
-        for (label, solve_fn) in VARIANTS
+    function verify_basis(ref_gb, test_gb, label::String)
+        if length(ref_gb) != length(test_gb)
+            error("VERIFICATION FAILED in $label: Basis size mismatch (expected $(length(ref_gb)), got $(length(test_gb)))")
+        end
+        if sort(collect(ref_gb)) != sort(collect(test_gb))
+            error("VERIFICATION FAILED in $label: Elements differ from Baseline Groebner basis!")
+        end
+        println("verification => PASSED (exact match, |G| = $(length(test_gb)))")
+    end
+
+    function run_instance(path::String; verify::Bool=true)
+        ref_gb = nothing
+        for (idx, (label, solve_fn)) in enumerate(VARIANTS)
             try
                 println("IPGBs, ", label)
                 GC.gc() # Prevent GC spillover from the previous variant
                 stats = @timed solve_fn(path)
                 println("time => ", stats.time)
                 println("memory => ", stats.bytes / 1024^3)
+
+                if idx == 1
+                    ref_gb = stats.value
+                    println("gb_size => ", length(ref_gb))
+                elseif verify && ref_gb !== nothing
+                    verify_basis(ref_gb, stats.value, label)
+                end
             catch e
                 println("Error in $label: ", e)
+				rethrow(e)
             end
         end
     end
 
     function process_file(filename::String)
         println("[Worker $(myid())] Running ", filename)
+		t0 = time()
         open(filename * ".log", "w") do f
             redirect_stdout(f) do
-                run_instance(filename)
+                run_instance(filename; verify=true)
             end
         end
+        println("[Worker $(myid())] Finished ", filename, " in ", round(time() - t0, digits=2), "s")
     end
 end
 
