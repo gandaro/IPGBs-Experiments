@@ -24,15 +24,22 @@ end
         println("verification => PASSED (exact match, |G| = $(length(test_gb)))")
     end
 
+	function cpu_time_ns()
+		ts = Ref{Tuple{Int64, Int64}}((0, 0))
+		# 2 entspricht CLOCK_PROCESS_CPUTIME_ID unter Linux
+		ccall(:clock_gettime, Cint, (Cint, Ptr{Nothing}), 2, ts)
+		return ts[][1] * 1_000_000_000 + ts[][2]
+	end
+
     function run_instance(path::String; verify::Bool=true)
         ref_gb = nothing
         for (idx, (label, solve_fn)) in enumerate(VARIANTS)
             try
                 println("IPGBs, ", label)
                 GC.gc() # Prevent GC spillover from the previous variant
-                cpu_t0 = Base.CPU_time_ns()
+                cpu_t0 = cpu_time_ns()
                 stats = @timed solve_fn(path)
-                cpu_time = (Base.CPU_time_ns() - cpu_t0) / 1e9
+                cpu_time = (cpu_time_ns() - cpu_t0) / 1e9
                 println("cpu_time => ", cpu_time)
                 println("time => ", stats.time)
                 println("memory => ", stats.bytes / 1024^3)
